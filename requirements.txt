@@ -3,3 +3,6 @@ pandas
 tabulate
 matplotlib
 seaborn
+plotly
+nbformat>=4.2.0
+
