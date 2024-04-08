@@ -7,3 +7,6 @@ plotly
 scikit-learn
 xgboost
 streamlit
+google-generativeai
+python-dotenv
+langchain

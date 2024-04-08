@@ -1,4 +1,7 @@
+from dotenv import load_dotenv
 import streamlit as st
+import os
+import google.generativeai as genai 
 import pickle
 import numpy as np
 
@@ -6,12 +9,26 @@ import numpy as np
 pipe = pickle.load(open('pipe.pkl', 'rb'))
 df = pickle.load(open('df.pkl', 'rb'))
 
+# Load environment variables
+load_dotenv()
+
+# Configure Google API key
+genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
+
+# Initialize the Generative Model
+model = genai.GenerativeModel("gemini-pro")
+
+def get_gemini_response(question):
+    model = genai.GenerativeModel('gemini-pro')
+    response = model.generate_content(question)
+    return response.text
+
 # Set page title and description
-st.title("🚀 Laptop Price Predictor 🎮")
+st.title("🚀 Laptop Price Predictor & Component Chat Bot 🤖")
 st.markdown("### This app predicts the price of a laptop based on its configuration. ✨")
 
-# Input fields
-with st.sidebar.expander("Configuration", expanded=True):  # Set expanded=True to keep the sidebar open by default
+# Input fields for laptop price prediction
+with st.sidebar.expander("Configuration", expanded=True):
     company = st.selectbox('Brand', df['Company'].unique())
     type = st.selectbox('Type', df['TypeName'].unique())
     ram = st.selectbox('RAM (in GB)', [2, 4, 6, 8, 12, 16, 24, 32, 64])
@@ -52,47 +69,15 @@ if predict_button:
     predicted_price = predict_price(company, type, ram, weight, touchscreen, ips, screen_size, resolution, cpu, hdd, ssd, gpu, os)
     st.success(f"💰 The predicted price of this configuration is ₹{predicted_price}")
 
+# Chat bot section
+st.markdown("---")
+st.subheader("💬 Component Chat Bot")
 
-# Footer HTML code
-footer_with_image_light_blue = """
-<style>
-    .footer {
-        padding: 20px;
-        text-align: center;
-        background-color: #f0f0f0;
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-    }
-    .line {
-        border-top: 1px solid #ddd;
-        margin: 10px 0;
-    }
-    .connect-text {
-        font-size: 18px;
-        margin-bottom: 10px;
-    }
-    .footer img {
-        margin: 0 10px;
-    }
-    .powered-by {
-        font-size: 14px;
-        color: #888;
-    }
-</style>
+# Input textbox for chat bot
+component_name = st.selectbox("Select a Component:", ["RAM", "CPU", "GPU", "Screen", "Battery", "Storage"])
+submit_button = st.button("Ask")
 
-<div class="footer">
-    <div class="line"></div>
-    <div class="connect-text">Connect with me at</div>
-    <a href="https://github.com/FasilHameed" target="_blank"><img src="https://img.icons8.com/plasticine/30/000000/github.png" alt="GitHub"></a>
-    <a href="https://www.linkedin.com/in/faisal--hameed/" target="_blank"><img src="https://img.icons8.com/plasticine/30/000000/linkedin.png" alt="LinkedIn"></a>
-    <a href="tel:+917006862681"><img src="https://img.icons8.com/plasticine/30/000000/phone.png" alt="Phone"></a>
-    <a href="mailto:faisalhameed763@gmail.com"><img src="https://img.icons8.com/plasticine/30/000000/gmail.png" alt="Gmail"></a>
-    <div class="line"></div>
-    <div class="powered-by">Powered By <img src="https://img.icons8.com/clouds/30/000000/gemini.png" alt="Gemini"> Gemini 💫 and Streamlit 🚀</div>
-</div>
-"""
-
-# Render Footer
-st.markdown(footer_with_image_light_blue, unsafe_allow_html=True)
+# Handle question submission
+if submit_button and component_name:
+    response = get_gemini_response(component_name)
+    st.write("**Bot:**", response)
